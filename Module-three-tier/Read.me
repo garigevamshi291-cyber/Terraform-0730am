@@ -1,0 +1,171 @@
+🚀 Terraform Three-Tier Architecture Project
+📌 Project Overview
+
+This project implements a Three-Tier Architecture on AWS using Terraform.
+
+The architecture is divided into:
+
+Frontend Layer (Web Tier)
+Backend Layer (Application Tier)
+Database Layer (RDS Tier)
+
+It follows Infrastructure as Code (IaC) principles using reusable Terraform modules.
+
+🏗️ Architecture Diagram (Conceptual)
+Internet
+   ↓
+Frontend ALB
+   ↓
+Frontend EC2 (Auto Scaling)
+   ↓
+Backend ALB
+   ↓
+Backend EC2 (Auto Scaling)
+   ↓
+RDS (MySQL Database)
+📁 Project Structure
+Module-three-tier/
+│
+├── Root/
+│   ├── envs/
+│   │   └── dev/
+│   │       └── main.tf
+│   │
+│   └── modules/
+│       ├── infrastructure/
+│       ├── frontend/
+│       │   ├── ec2/
+│       │   ├── loadbalancer-frontend/
+│       │   ├── launch-template/
+│       │   └── asg/
+│       │
+│       ├── backend/
+│       │   ├── ec2/
+│       │   ├── loadbalancer-backend/
+│       │   ├── launch-template/
+│       │   └── asg/
+│       │
+│       ├── bastion/
+│       └── database/
+⚙️ Technologies Used
+Terraform
+AWS EC2
+AWS VPC
+AWS ALB (Application Load Balancer)
+AWS Auto Scaling Group (ASG)
+AWS RDS (MySQL)
+AWS Security Groups
+🔧 Modules Explanation
+1. Infrastructure Module
+
+Creates:
+
+VPC
+Public & Private Subnets
+Internet Gateway
+NAT Gateway
+Route Tables
+Security Groups
+
+Outputs:
+
+VPC ID
+Subnet IDs
+Security Group IDs
+2. Frontend Module
+
+Creates:
+
+EC2 instances (Web servers)
+Application Load Balancer (ALB)
+Launch Template
+Auto Scaling Group
+3. Backend Module
+
+Creates:
+
+EC2 instances (App servers)
+Internal Load Balancer
+Launch Template
+Auto Scaling Group
+4. Database Module
+
+Creates:
+
+RDS MySQL instance
+5. Bastion Module
+
+Creates:
+
+Bastion Host (for SSH access to private instances)
+🔑 Key Concepts Used
+✅ Modular Architecture
+
+Each component is reusable and independent.
+
+✅ Variables & Outputs
+Inputs passed using variables.tf
+Outputs shared between modules
+✅ Dependency Management
+
+Example:
+
+module.vpc.vpc_id → used by ALB, EC2, RDS
+⚠️ Common Errors & Fixes
+❌ Key Pair Error
+InvalidKeyPair.NotFound
+
+✔ Fix:
+
+Create key pair in AWS
+Use correct name in Terraform
+❌ Module Path Error
+Unreadable module directory
+
+✔ Fix:
+
+Ensure correct folder names
+Check spelling (loadbalancer vs loadblancer)
+❌ RDS Free Tier Error
+FreeTierRestrictionError
+
+✔ Fix:
+
+backup_retention_period = 0
+❌ Idempotent Error
+IdempotentParameterMismatch
+
+✔ Fix:
+
+terraform destroy
+terraform apply
+▶️ How to Run the Project
+Step 1: Initialize Terraform
+terraform init
+Step 2: Plan Infrastructure
+terraform plan
+Step 3: Apply Configuration
+terraform apply
+Step 4: Destroy Resources
+terraform destroy
+🔐 Best Practices Followed
+Use of modules for reusability
+Separation of environments (dev)
+Avoid hardcoding values (use variables)
+Secure architecture with private subnets
+Bastion host for SSH access
+🎯 Interview Explanation (VERY IMPORTANT)
+
+👉 You can explain like this:
+
+"I built a three-tier architecture using Terraform with modular design.
+The infrastructure module creates the VPC, subnets, and networking.
+The frontend and backend layers use ALB + Auto Scaling for scalability.
+The database layer uses RDS in private subnets.
+Security is enforced using security groups and a bastion host for access."
+
+🚀 Future Improvements
+Add CI/CD pipeline
+Use Terraform Cloud / Remote backend
+Add monitoring (CloudWatch)
+Use secrets manager for DB credentials
