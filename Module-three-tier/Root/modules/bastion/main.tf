@@ -29,7 +29,7 @@ variable "ami" {
 variable "instance_type" {
   description = "Instance type for the bastion host"
   type        = string
-  default     = "t2.micro"
+  default     = "t3.micro"
 }
 
 variable "key_name" {
