@@ -2,7 +2,7 @@ IAC {Infreastructure as code}
 Benifites are code reuseability, time save , code backup,easy monitoring ,faster setup, creation of resources, better readability, quick deploy , tracking of changes, reducing manual error and cost
 
 Terraform Files You Must Know for Interviews
-File	Purpose
+  File	                 Purpose
 main.tf	           -  Infrastructure resources
 variables.tf	     -  Input variables
 terraform.tfvars	 -  Variable values
