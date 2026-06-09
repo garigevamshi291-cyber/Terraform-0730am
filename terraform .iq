@@ -1,0 +1,224 @@
+1. What is terraform.tfstate?
+terraform.tfstate is a state file that Terraform uses to keep track of the infrastructure it manages.
+It stores:Resource IDs
+          Resource attributes
+          Metadata
+          Resource dependencies
+          Current infrastructure state
+
+Example:
+If Terraform creates an EC2 instance:
+resource "aws_instance" "web" {
+  instance_type = "t2.micro"
+}
+
+Terraform stores information like:
+aws_instance.web
+instance_id = i-123456789
+public_ip = 13.x.x.x
+inside the state file.
+Without the state file, Terraform would not know which resources it already created.
+
+2. Why is terraform.tfstate needed?
+Terraform uses the state file to compare:
+
+Desired State (Terraform Code)
+            VS
+Current State (State File)
+
+When we run:
+terraform plan
+
+Terraform checks:
+What exists in the state file
+What exists in the code
+
+Then it calculates what needs to be created, modified, or deleted.
+Without the state file:Terraform loses resource tracking.
+                      Infrastructure drift becomes difficult to manage.
+                      Updates become unreliable.
+3. What happens if two engineers run terraform apply simultaneously?
+Imagine:Engineer A:
+terraform apply
+Engineer B:terraform apply
+Both are using the same infrastructure.
+
+Problems can occur:State corruption
+                  Resource conflicts
+                  Duplicate resources
+                  Inconsistent state
+
+Example:
+Engineer A updates EC2
+Engineer B updates Security Group
+Both try to update the state file at the same time.
+
+Result:
+State file corruption
+       or
+Last writer wins
+which can overwrite changes.
+
+4. Why use S3 + DynamoDB?
+Architecture:
+Terraform
+    │
+    ▼
+S3 Bucket
+(State Storage)
+    │
+    ▼
+DynamoDB
+(State Locking)
+S3
+
+Stores the shared Terraform state file.
+Benefits:Centralized state
+          Versioning
+          Backup
+          Team access
+
+Example:
+terraform.tfstat
+is stored in:
+s3://terraform-state-bucket/
+instead of a developer's laptop.
+
+DynamoDB
+Provides state locking.
+Before Terraform modifies state:
+
+Acquire Lock
+      ↓
+Update State
+      ↓
+Release Lock
+Only one person can modify state at a time.
+
+5. Why is Remote State Used?
+Remote state allows multiple engineers to share a single Terraform state file.
+Without remote state:
+
+Engineer A Laptop
+     state
+Engineer B Laptop
+     state
+
+Each engineer has a different copy.
+This causes:State mismatch
+            Resource drift
+            Team collaboration issues
+
+With remote state:
+Team
+  │
+  ▼
+S3 Bucket
+  │
+Shared State
+Everyone uses the same state file.
+Benefits:Team collaboration
+         Centralized management
+         Version control
+         Disaster recovery
+         CI/CD integration
+6. Why is State Locking Needed?
+Imagine: Current EC2: t2.micro
+Engineer A:
+changes to t3.micro
+Engineer B:
+changes to t3.small
+
+Both run: terraform apply at the same time.
+Terraform could write conflicting updates.
+State locking prevents this.
+Process:
+Acquire Lock
+     ↓
+Run Apply
+     ↓
+Update State
+     ↓
+Release Lock
+Other users must wait until the lock is released.
+
+7. What Problem Does DynamoDB Solve?
+DynamoDB provides a locking mechanism that prevents multiple Terraform operations from modifying the state file simultaneously.
+Without DynamoDB:
+
+Multiple terraform apply
+       ↓
+State corruption
+
+With DynamoDB:
+Engineer A acquires lock
+Engineer B waits
+This ensures:Consistency
+             Safe collaboration
+             No state corruption
+
+8. Explain Root Module vs Child Module
+Terraform projects are built using modules.
+Root Module: The directory where Terraform commands are executed.
+Example:
+
+project/
+│
+├── main.tf
+├── variables.tf
+├── outputs.tf
+
+Commands:terraform init
+terraform apply are run here.
+This is called the Root Module.
+
+Child Module
+Reusable Terraform code called by the root module.
+Example:
+modules/
+└── ec2/
+    ├── main.tf
+    ├── variables.tf
+    └── outputs.tf
+
+Root Module calls Child Module:
+module "ec2" {
+  source = "./modules/ec2"
+  instance_type = "t2.micro"
+}
+
+Architecture:
+Root Module
+    │
+    ├── Child Module (EC2)
+    │
+    ├── Child Module (VPC)
+    │
+    └── Child Module (RDS)
+Why Use Child Modules?
+Benefits:Reusability
+         Less code duplication
+         Easier maintenance
+         Standardization
+Example:
+Instead of writing EC2 code 20 times:
+Dev
+QA
+Prod
+you write one EC2 module and reuse it.
+
+Short Interview Version (30-Second Answers)
+What is terraform.tfstate?
+Stores the current state of infrastructure managed by Terraform and maps resources in code to actual cloud resources.
+
+Why Remote State?
+To allow multiple team members and CI/CD pipelines to share a single source of truth for infrastructure state.
+
+Why S3?
+To centrally store Terraform state with durability, versioning, and team access.
+
+Why DynamoDB?
+To provide state locking and prevent concurrent Terraform operations from corrupting the state file.
+
+Root Module vs Child Module?
+The root module is where Terraform commands are executed. Child modules are reusable Terraform components called by the root module.
