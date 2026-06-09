@@ -1,5 +1,5 @@
 IAC {Infreastructure as code}
-Benifites are code reuseability, time save , code backup,easy monitoring ,faster setup, creation of resources, better readability, uick deploy , tracking of changes, reducing manual error and cost
+Benifites are code reuseability, time save , code backup,easy monitoring ,faster setup, creation of resources, better readability, quick deploy , tracking of changes, reducing manual error and cost
 
 Terraform Files You Must Know for Interviews
 File	Purpose
