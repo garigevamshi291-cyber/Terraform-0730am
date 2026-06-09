@@ -1,2 +1,246 @@
 IAC {Infreastructure as code}
 Benifites are code reuseability, time save , code backup,easy monitoring ,faster setup, creation of resources, better readability, uick deploy , tracking of changes, reducing manual error and cost
+
+Terraform Files You Must Know for Interviews
+File	Purpose
+main.tf	           -  Infrastructure resources
+variables.tf	     -  Input variables
+terraform.tfvars	 -  Variable values
+outputs.tf	       -  Output values
+provider.tf	       -   Cloud provider configuration
+backend.tf	       -  Remote state configuration
+terraform.tfstate	 -  Infrastructure metadata
+terraform.lock.hcl -  Provider version locking
+.terraform/	       -  Downloaded plugins
+
+Terraform configuration files 
+Provider.tf { where we can cloud provider details example - AWS, AZURE, GCP}
+Main.tf {where we can create required resources to be created}
+variable.tf {we can write a varible for values}
+output.tf { we can call resources output values}
+terraform.tfvars { we can the values to variables }
+
+Imprortant Terraform Commands 
+Terrform init  - Installizes the process and downloads the required cloud plugins into working directory
+Terrform plan - Give a plan that what resources are going to be created                                                                          
+Terrform apply -creates the resources 
+Terrform destroy- deletes the resources
+Terraform validate- validtes syntex in the code
+Terraform show- shows the state information
+Terraform fmt- formates the code 
+
+Write Code
+    ↓
+terraform init
+    ↓
+terraform validate
+    ↓
+terraform plan
+    ↓
+terraform apply
+    ↓
+terraform destroy
+
+How terrform works 
+
+What Happens During terraform init?
+terraform init
+
+Terraform:
+
+Reads provider block.
+Downloads provider plugin.
+Creates .terraform/ directory.
+Creates lock file.
+.terraform/
+terraform.lock.hcl
+
+Interview Question:
+Why terraform init?
+Answer:
+It initializes the working directory by downloading provider plugins and backend configurations.
+
+What Happens During terraform plan?
+terraform plan
+Terraform compares:
+Current State
+      VS
+Desired Configuration
+Example:
+Current AWS:
+0 EC2
+Code:
+1 EC2
+Plan:
++ create EC2
+No changes happen yet.
+What Happens During terraform apply?
+terraform apply
+Terraform:
+1. Read tf files
+2. Read tfstate
+3. Generate execution plan
+4. Call AWS API
+5. Create resources
+6. Update tfstate
+Result:
+EC2 created
+State updated
+
+terrform.tfState File Architecture
+Most important Terraform interview topic.
+
+                                       Terraform Code
+                                            |
+                                            |
+                                            v
+                                      Desired State
+
+                                     terraform.tfstate
+                                             |
+                                             |
+                                             v
+                                 Current Infrastructure State
+
+Example state:
+{
+  "resources": [
+    {
+      "type": "aws_instance",
+      "name": "web"
+    }
+  ]
+}
+
+Terraform does NOT continuously scan AWS.
+Instead it checks:terraform.tfstate
+to know what resources it manages.
+Why State File Is Important
+Without state file:
+Terraform cannot track resources.
+It won't know:
+
+Which EC2 belongs to Terraform
+Which VPC belongs to Terraform
+What needs updating
+Local vs Remote State
+Local State
+terraform.tfstate
+
+Stored locally.
+Problem:Team collaboration issues
+Remote State
+
+Usually stored in:AWS S3
+With locking in:
+DynamoDB
+Architecture:Developer 1
+                |
+             Developer 2
+                |
+                v
+        +----------------+
+        | Terraform      |
+        +----------------+
+               |
+               v
+        +----------------+
+        | S3 State File  |
+        +----------------+
+              |
+              v
+        +----------------+
+        | DynamoDB Lock  |
+        +----------------+
+
+Interview Question:
+Why DynamoDB?
+Answer:To prevent multiple users from modifying the state file simultaneously.
+
+             Terraform Architecture
+                     Developer
+                         |
+                         |
+                  terraform apply
+                         |
+                         v
++--------------------------------------------------+
+|               Terraform CLI                      |
+|      (terraform init/plan/apply/destroy)         |
++--------------------------------------------------+
+                         |
+                         |
+          Reads Configuration Files
+                         |
+                         v
++--------------------------------------------------+
+|                 Terraform Code                   |
+|--------------------------------------------------|
+| main.tf                                          |
+| variables.tf                                     |
+| terraform.tfvars                                 |
+| outputs.tf                                       |
+| provider.tf                                      |
++--------------------------------------------------+
+                         |
+                         |
+                  Creates Execution Plan
+                         |
+                         v
++--------------------------------------------------+
+|                Terraform Core                    |
+|--------------------------------------------------|
+| Dependency Graph                                 |
+| State Management                                 |
+| Resource Mapping                                 |
+| Execution Planning                               |
++--------------------------------------------------+
+                         |
+                         |
+               Calls Provider Plugin
+                         |
+                         v
++--------------------------------------------------+
+|                AWS Provider                      |
+|          (Plugin downloaded at init)             |
++--------------------------------------------------+
+                         |
+                  AWS APIs Calls
+                         |
+                         v
++--------------------------------------------------+
+|                     AWS                          |
+|--------------------------------------------------|
+| EC2                                              |
+| VPC                                              |
+| S3                                               |
+| IAM                                              |
+| RDS                                              |
+| EKS                                              |
++--------------------------------------------------+
+                         |
+                  Resource Details
+                         |
+                         v
++--------------------------------------------------+
+|               terraform.tfstate                  |
+|      Stores Infrastructure Metadata              |
++--------------------------------------------------+
+(VScode)   working directory _______  cloud(aws,azure,gcp)
+                        |               |
+                        terrform rigestry
+when we run terrform init the request passs to the terrform registry and will install the required plugins to working directory
+
+
+Interview-Level Understanding
+
+If an interviewer asks:
+
+"Explain Terraform architecture."
+
+A strong answer is:
+
+Terraform consists of Terraform Core and Provider Plugins. Terraform Core reads .tf configuration files, creates a dependency graph, compares the desired state with the current state stored in terraform.tfstate,
+generates an execution plan, and then communicates with cloud providers through provider plugins.
+The provider plugin translates Terraform requests into cloud API calls (AWS, Azure, GCP).
+After resources are created or modified, Terraform updates the state file so it can track infrastructure changes in future runs.
